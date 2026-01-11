@@ -1,23 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
 
 function App() {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/tasks");
+        const data = await res.json();
+        setTasks(data);
+      } catch (err) {
+        console.error("Failed to fetch tasks:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTasks();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app-container">
+      <h1 className="title">Task Tracker</h1>
+
+      {loading ? (
+        <p className="loading">Loading...</p>
+      ) : (
+        <ul className="task-list">
+          {tasks.map((task) => {
+            const isCompleted = task.status === "done";
+            return (
+              <li
+                key={task.id}
+                className={`task-item ${isCompleted ? "completed" : "pending"}`}
+              >
+                <div className="task-title">{task.title}</div>
+                <div className="task-status">{task.status}</div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
